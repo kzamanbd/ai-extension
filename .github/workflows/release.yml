@@ -64,25 +64,41 @@ jobs:
                     echo "" >> $GITHUB_OUTPUT
                     
                     # Group by type using conventional commits pattern
-                    echo "### ✨ New Features" >> $GITHUB_OUTPUT
-                    git log "$PREV_TAG"..HEAD --pretty=format:"- %s" --grep="^feat" >> $GITHUB_OUTPUT
-                    echo "" >> $GITHUB_OUTPUT
-                    echo "" >> $GITHUB_OUTPUT
+                    # New Features
+                    FEATURES=$(git log "$PREV_TAG"..HEAD --pretty=format:"- %s" --grep="^feat")
+                    if [ ! -z "$FEATURES" ]; then
+                      echo "### ✨ New Features" >> $GITHUB_OUTPUT
+                      echo "$FEATURES" >> $GITHUB_OUTPUT
+                      echo "" >> $GITHUB_OUTPUT
+                      echo "" >> $GITHUB_OUTPUT
+                    fi
                     
-                    echo "### 🐛 Bug Fixes" >> $GITHUB_OUTPUT
-                    git log "$PREV_TAG"..HEAD --pretty=format:"- %s" --grep="^fix" >> $GITHUB_OUTPUT
-                    echo "" >> $GITHUB_OUTPUT
-                    echo "" >> $GITHUB_OUTPUT
+                    # Bug Fixes
+                    FIXES=$(git log "$PREV_TAG"..HEAD --pretty=format:"- %s" --grep="^fix")
+                    if [ ! -z "$FIXES" ]; then
+                      echo "### 🐛 Bug Fixes" >> $GITHUB_OUTPUT
+                      echo "$FIXES" >> $GITHUB_OUTPUT
+                      echo "" >> $GITHUB_OUTPUT
+                      echo "" >> $GITHUB_OUTPUT
+                    fi
                     
-                    echo "### 📝 Documentation" >> $GITHUB_OUTPUT
-                    git log "$PREV_TAG"..HEAD --pretty=format:"- %s" --grep="^docs" >> $GITHUB_OUTPUT
-                    echo "" >> $GITHUB_OUTPUT
-                    echo "" >> $GITHUB_OUTPUT
+                    # Documentation
+                    DOCS=$(git log "$PREV_TAG"..HEAD --pretty=format:"- %s" --grep="^docs")
+                    if [ ! -z "$DOCS" ]; then
+                      echo "### 📝 Documentation" >> $GITHUB_OUTPUT
+                      echo "$DOCS" >> $GITHUB_OUTPUT
+                      echo "" >> $GITHUB_OUTPUT
+                      echo "" >> $GITHUB_OUTPUT
+                    fi
                     
-                    echo "### 🧹 Other Changes" >> $GITHUB_OUTPUT
-                    git log "$PREV_TAG"..HEAD --pretty=format:"- %s" --grep="^refactor\|^chore\|^style\|^test\|^perf" >> $GITHUB_OUTPUT
-                    echo "" >> $GITHUB_OUTPUT
-                    echo "" >> $GITHUB_OUTPUT
+                    # Other Changes
+                    OTHER=$(git log "$PREV_TAG"..HEAD --pretty=format:"- %s" --grep="^refactor\|^chore\|^style\|^test\|^perf")
+                    if [ ! -z "$OTHER" ]; then
+                      echo "### 🧹 Other Changes" >> $GITHUB_OUTPUT
+                      echo "$OTHER" >> $GITHUB_OUTPUT
+                      echo "" >> $GITHUB_OUTPUT
+                      echo "" >> $GITHUB_OUTPUT
+                    fi
                     
                     echo "### 📦 Full Change Log" >> $GITHUB_OUTPUT
                     git log "$PREV_TAG"..HEAD --pretty=format:"- %h %s" | grep -v "^- [a-f0-9]* Merge " >> $GITHUB_OUTPUT
