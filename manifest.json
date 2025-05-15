@@ -1,30 +1,28 @@
 {
-    "name": "AI Finder",
-    "description": "AI Finder is a Chrome extension that helps you find AI tools and resources.",
+    "name": "AI ClipCatcher",
+    "description": "AI ClipCatcher is a Chrome extension that helps you find AI tools and resources.",
     "version": "1.0.0",
     "author": "Kamruzzaman",
     "manifest_version": 3,
     "permissions": ["tabs", "activeTab", "storage", "contextMenus"],
     "icons": {
-        "16": "icons/favicon-16x16.png",
-        "32": "icons/favicon-32x32.png",
-        "48": "icons/favicon-32x32.png",
-        "128": "icons/favicon-150x150.png"
+        "16": "icons/favicon.png",
+        "32": "icons/favicon.png",
+        "48": "icons/favicon.png",
+        "128": "icons/favicon.png"
     },
     "action": {
         "default_icon": {
-            "16": "icons/favicon-16x16.png",
-            "32": "icons/favicon-32x32.png",
-            "48": "icons/favicon-32x32.png",
-            "128": "icons/favicon-150x150.png"
-        }
+            "16": "icons/favicon.png",
+            "32": "icons/favicon.png",
+            "48": "icons/favicon.png",
+            "128": "icons/favicon.png"
+        },
+        "default_popup": "index.html"
     },
     "content_scripts": [
         {
-            "matches": [
-                "http://127.0.0.1:5500/*",
-                "https://sora.chatgpt.com/*"
-            ],
+            "matches": ["http://127.0.0.1:5500/*", "https://sora.chatgpt.com/*"],
             "js": ["script.js"]
         }
     ]
