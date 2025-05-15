@@ -23,6 +23,26 @@ const getExtensionFromContentType = (contentType) => {
     return mimeToExt[contentType] || extension; // Default to .mp4 if MIME type not recognized
 };
 
+const addSpinner = (element) => {
+    element.style.opacity = '0.5';
+    element.setAttribute('disabled', 'true'); // Disable the button
+    element.textContent = 'Downloading...'; // Change button text
+    // Create a spinner element
+    const spinner = document.createElement('span');
+    spinner.className = 'spinner';
+    spinner.style.cssText = `
+        border: 2px solid #f3f3f3;
+        border-top: 2px solid #3498db;
+        border-radius: 50%;
+        width: 12px;
+        height: 12px;
+        animation: spin 1s linear infinite;
+        display: inline-block;
+        margin-left: 5px;
+    `;
+    element.appendChild(spinner);
+};
+
 const downloadHandler = async (event, src) => {
     // Prevent default behavior and stop event propagation
     event.preventDefault();
@@ -30,6 +50,9 @@ const downloadHandler = async (event, src) => {
 
     // fetch the video file
     try {
+        // add a loading spinner
+        addSpinner(event.target);
+        // Fetch the video file
         const response = await fetch(src);
         if (!response.ok) {
             console.error('Network response was not ok');
@@ -53,6 +76,17 @@ const downloadHandler = async (event, src) => {
         URL.revokeObjectURL(url);
     } catch (error) {
         console.error('Error downloading video:', error);
+    } finally {
+        // remove the spinner
+        const button = event.target;
+        button.style.opacity = '1';
+        button.removeAttribute('disabled'); // Enable the button
+        button.textContent = 'Download'; // Reset button text
+        // Remove the spinner element
+        const spinner = button.querySelector('.spinner');
+        if (spinner) {
+            spinner.remove();
+        }
     }
 };
 
