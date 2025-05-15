@@ -1,0 +1,56 @@
+name: Extension Validation
+
+on:
+    push:
+        branches: [main, master]
+    pull_request:
+        branches: [main, master]
+
+jobs:
+    validate:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v3
+
+            - name: Validate manifest.json
+              run: |
+                  if jq empty manifest.json; then
+                    echo "✅ manifest.json is valid JSON"
+                  else
+                    echo "❌ manifest.json is not valid JSON"
+                    exit 1
+                  fi
+
+            - name: Check required files
+              run: |
+                  required_files=("manifest.json" "background.js" "script.js" "popup.js" "index.html")
+                  for file in "${required_files[@]}"; do
+                    if [ ! -f "$file" ]; then
+                      echo "❌ Required file $file is missing"
+                      exit 1
+                    else
+                      echo "✅ Required file $file found"
+                    fi
+                  done
+
+                  if [ ! -d "icons" ] || [ ! -f "icons/favicon.png" ]; then
+                    echo "❌ Icons directory or favicon.png is missing"
+                    exit 1
+                  else
+                    echo "✅ Icons directory and favicon.png found"
+                  fi
+
+            - name: Create test package
+              run: |
+                  mkdir -p test-build
+                  zip -r test-build/ai-clipcatcher-test.zip \
+                    manifest.json \
+                    background.js \
+                    script.js \
+                    popup.js \
+                    index.html \
+                    icons/ \
+                    -x "*.git*" -x "*.github*" -x "*.vscode*"
+
+                  echo "✅ Extension package created successfully"
+                  ls -la test-build/

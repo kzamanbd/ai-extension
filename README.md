@@ -44,14 +44,19 @@ This extension is built with vanilla JavaScript and uses Chrome's Extension Mani
 
 ```md
 ai-extension/
+├── .github/
+│   └── workflows/
+│       ├── release.yml
+│       └── validate.yml
 ├── icons/
 │   └── favicon.png
 ├── background.js
 ├── index.html
 ├── manifest.json
 ├── popup.js
-├── script.js
-└── README.md
+├── README.md
+├── release.sh
+└── script.js
 ```
 
 ## Author
@@ -61,3 +66,35 @@ ai-extension/
 ## Version
 
 1.0.0
+
+## Releasing New Versions
+
+This project uses GitHub Actions to automate the release process. When you're ready to release a new version:
+
+1. Update your code and test it thoroughly
+2. Use the provided release script which will automatically:
+   - Update the version in `manifest.json`
+   - Commit the changes
+   - Create and push a new tag
+
+```bash
+# Example: Release version 1.0.1
+./release.sh 1.0.1
+```
+
+Or do it manually:
+
+```bash
+# Update manifest.json version
+# Commit changes
+git tag v1.0.1
+git push origin v1.0.1
+```
+
+This will automatically trigger the GitHub workflow that:
+
+- Creates a new GitHub release
+- Packages the extension into a ZIP file
+- Attaches the ZIP file to the release
+
+The workflow files can be found in `.github/workflows/`.
