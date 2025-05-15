@@ -30,13 +30,13 @@ jobs:
             - name: Update version in manifest
               run: |
                   # Update version in manifest.json
-                  sed -i 's/"version": ".*"/"version": "${{ env.VERSION }}"/' manifest.json
+                  sed -i 's/"version": ".*"/"version": "'$VERSION'"/' manifest.json
 
             - name: Package Extension
               run: |
                   # Create a clean zip excluding development files
                   mkdir -p dist
-                  zip -r dist/ai-clipcatcher-${{ env.VERSION }}.zip \
+                  zip -r dist/ai-clipcatcher-$VERSION.zip \
                     manifest.json \
                     background.js \
                     script.js \

@@ -4,7 +4,7 @@
 # Check if a version argument was provided
 if [ -z "$1" ]; then
   echo "Usage: ./release.sh <version>"
-  echo "Example: ./release.sh 1.0.1"
+  echo "Example: ./release.sh 1.0.0"
   exit 1
 fi
 
@@ -24,7 +24,7 @@ echo "Updated manifest.json version to $VERSION"
 
 # Commit the version change
 git add manifest.json
-git commit -m "Bump version to $VERSION"
+git commit -m "Release version to $VERSION"
 
 # Create and push the tag
 git tag $TAG_NAME
@@ -34,4 +34,4 @@ git push origin $TAG_NAME
 echo "✅ Released version $VERSION!"
 echo "  - Created and pushed tag: $TAG_NAME"
 echo "  - The GitHub workflow will now create the release automatically"
-echo "  - Check the workflow status at: https://github.com/yourusername/ai-extension/actions"
+echo "  - Check the workflow status at: https://github.com/kzamanbd/ai-extension/actions"
