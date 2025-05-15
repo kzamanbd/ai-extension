@@ -22,7 +22,7 @@
         {
             "matches": [
                 "http://127.0.0.1:5500/*",
-                "https://sora.chatgpt.com/explore/*",
+                "https://sora.chatgpt.com/*",
                 "http://managment.io/*",
                 "https://managment.io/*"
             ],
