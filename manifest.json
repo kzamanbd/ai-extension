@@ -4,7 +4,10 @@
     "version": "1.0.0",
     "author": "Kamruzzaman",
     "manifest_version": 3,
-    "permissions": ["tabs", "activeTab", "storage", "contextMenus"],
+    "permissions": ["tabs", "activeTab", "storage", "contextMenus", "downloads"],
+    "background": {
+        "service_worker": "background.js"
+    },
     "icons": {
         "16": "icons/favicon.png",
         "32": "icons/favicon.png",

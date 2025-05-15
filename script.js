@@ -1,3 +1,21 @@
+// Store download path in Chrome storage
+let downloadFolderPath = 'ai-video'; // Default subfolder
+
+// Function to initialize settings
+const initSettings = () => {
+    chrome.storage.sync.get(['downloadFolderPath'], (result) => {
+        if (result.downloadFolderPath) {
+            downloadFolderPath = result.downloadFolderPath;
+        } else {
+            // Set default path
+            chrome.storage.sync.set({ downloadFolderPath: downloadFolderPath });
+        }
+    });
+};
+
+// Initialize settings when script loads
+initSettings();
+
 function generateRandomString(length = 32) {
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
     let result = '';
@@ -59,9 +77,6 @@ const downloadHandler = async (event, src) => {
             return;
         }
         const blob = await response.blob();
-        const url = URL.createObjectURL(blob);
-        const anchorEl = document.createElement('a');
-        anchorEl.href = url;
 
         // Determine file extension from Content-Type header
         const contentType = response.headers.get('Content-Type');
@@ -69,17 +84,45 @@ const downloadHandler = async (event, src) => {
 
         // Generate a random filename
         const filename = generateRandomString();
-        anchorEl.download = `${filename}${extension}`;
-        document.body.appendChild(anchorEl);
-        anchorEl.click();
-        anchorEl.remove();
-        URL.revokeObjectURL(url);
+        const fullFilename = `ai-clip-catcher_${filename}${extension}`;
+        // Create object URL
+        const url = URL.createObjectURL(blob);
+        // Send message to background script to handle the download
+        try {
+            chrome.runtime.sendMessage(
+                {
+                    action: 'download',
+                    url: url,
+                    filename: fullFilename,
+                    folderPath: downloadFolderPath
+                },
+                (response) => {
+                    // Clean up the object URL after download starts
+                    URL.revokeObjectURL(url);
+                    if (!response || !response.success) {
+                        console.error('Download failed:', response ? response.error : 'Unknown error');
+                    }
+                }
+            );
+        } catch (error) {
+            console.error('Error sending message to background script:', error);
+            // Fallback to the old method if we're in a context where chrome.runtime isn't available
+            // This should not normally be needed, but acts as a safety net
+            const anchorEl = document.createElement('a');
+            anchorEl.href = url;
+            anchorEl.download = fullFilename;
+            document.body.appendChild(anchorEl);
+            anchorEl.click();
+            anchorEl.remove();
+            URL.revokeObjectURL(url);
+        }
     } catch (error) {
         console.error('Error downloading video:', error);
     } finally {
         // remove the spinner
         const button = event.target;
         button.style.opacity = '1';
+        button.style.display = 'none'; // Show the button again
         button.removeAttribute('disabled'); // Enable the button
         button.textContent = 'Download'; // Reset button text
         // Remove the spinner element
@@ -178,8 +221,10 @@ const addDownloadButtonToVideoContainers = () => {
             btn.style.display = 'block';
         });
         anchor.addEventListener('mouseout', () => {
-            // Hide the button when not hovered
-            btn.style.display = 'none';
+            // Hide the button when not hovered or not loading
+            if (btn.getAttribute('disabled') !== 'true') {
+                btn.style.display = 'none';
+            }
         });
     });
 };
