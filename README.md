@@ -26,6 +26,15 @@ A Chrome extension that helps you find and download AI-generated content such as
 1. Visit a supported website containing AI-generated videos
 2. Hover over a video to see the download button
 3. Click the download button to save the video to your computer
+4. Videos will be saved to the configured download folder (by default "ai-video" folder in your Downloads)
+
+### Customizing Download Location
+
+1. Click on the AI ClipCatcher icon in your browser toolbar to open the settings
+2. Enter your desired subfolder name in the "Download Folder Path" field
+3. Click "Save Settings" to apply changes
+
+Note: Due to browser security restrictions, Chrome extensions can only save files to subfolders within your default downloads directory, not to arbitrary locations like "/Users/kzaman/ai-video". The extension creates a subfolder in your Downloads directory.
 
 ## Development
 
@@ -37,8 +46,10 @@ This extension is built with vanilla JavaScript and uses Chrome's Extension Mani
 ai-extension/
 ├── icons/
 │   └── favicon.png
+├── background.js
 ├── index.html
 ├── manifest.json
+├── popup.js
 ├── script.js
 └── README.md
 ```
