@@ -58,11 +58,6 @@ jobs:
                     # If there's no previous tag, get the first commit
                     echo "CHANGELOG=## 🚀 First Release v${{ steps.get_version.outputs.VERSION }}" >> $GITHUB_OUTPUT
                   else
-                    # Generate changelog since the previous tag
-                    echo "CHANGELOG<<EOF" >> $GITHUB_OUTPUT
-                    echo "## 🚀 Changes since $PREV_TAG" >> $GITHUB_OUTPUT
-                    echo "" >> $GITHUB_OUTPUT
-                    
                     # Group by type using conventional commits pattern
                     # New Features
                     FEATURES=$(git log "$PREV_TAG"..HEAD --pretty=format:"- %s" --grep="^feat")
