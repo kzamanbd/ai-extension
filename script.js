@@ -1,4 +1,62 @@
-function addDownloadButtonToVideoContainers() {
+function generateRandomString(length = 32) {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    let result = '';
+    for (let i = 0; i < length; i++) {
+        result += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return result;
+}
+
+const getExtensionFromContentType = (contentType) => {
+    const extension = '.mp4'; // Default extension
+    // Map common video MIME types to extensions
+    const mimeToExt = {
+        'video/mp4': '.mp4',
+        'video/webm': '.webm',
+        'video/ogg': '.ogv',
+        'video/quicktime': '.mov',
+        'video/x-matroska': '.mkv',
+        'video/x-msvideo': '.avi',
+        'video/3gpp': '.3gp',
+        'video/x-flv': '.flv'
+    };
+    return mimeToExt[contentType] || extension; // Default to .mp4 if MIME type not recognized
+};
+
+const downloadHandler = async (event, src) => {
+    // Prevent default behavior and stop event propagation
+    event.preventDefault();
+    event.stopPropagation();
+
+    // fetch the video file
+    try {
+        const response = await fetch(src);
+        if (!response.ok) {
+            console.error('Network response was not ok');
+            return;
+        }
+        const blob = await response.blob();
+        const url = URL.createObjectURL(blob);
+        const anchorEl = document.createElement('a');
+        anchorEl.href = url;
+
+        // Determine file extension from Content-Type header
+        const contentType = response.headers.get('Content-Type');
+        const extension = getExtensionFromContentType(contentType);
+
+        // Generate a random filename
+        const filename = generateRandomString();
+        anchorEl.download = `${filename}${extension}`;
+        document.body.appendChild(anchorEl);
+        anchorEl.click();
+        anchorEl.remove();
+        URL.revokeObjectURL(url);
+    } catch (error) {
+        console.error('Error downloading video:', error);
+    }
+};
+
+const addDownloadButtonToVideoContainers = () => {
     console.log('Adding download button to video containers');
     // Find all video containers (adjust selector as needed)
     document.querySelectorAll('div > video[src]').forEach((video) => {
@@ -77,56 +135,8 @@ function addDownloadButtonToVideoContainers() {
         });
 
         // add event listener to the button
-        btn.addEventListener('click', async (event) => {
-            // Prevent default behavior and stop event propagation
-            event.preventDefault();
-            event.stopPropagation();
-
-            // fetch the video file
-            try {
-                const response = await fetch(src);
-                if (!response.ok) {
-                    console.error('Network response was not ok');
-                    return;
-                }
-                const blob = await response.blob();
-                const url = URL.createObjectURL(blob);
-                const anchorEl = document.createElement('a');
-                anchorEl.href = url;
-
-                // Get filename from URL as base
-                let filename = src.split('/').pop() || 'video';
-
-                // Determine file extension from Content-Type header
-                const contentType = response.headers.get('Content-Type');
-                let extension = '.mp4'; // Default extension
-
-                if (contentType) {
-                    // Map common video MIME types to extensions
-                    const mimeToExt = {
-                        'video/mp4': '.mp4',
-                        'video/webm': '.webm',
-                        'video/ogg': '.ogv',
-                        'video/quicktime': '.mov',
-                        'video/x-matroska': '.mkv',
-                        'video/x-msvideo': '.avi',
-                        'video/3gpp': '.3gp',
-                        'video/x-flv': '.flv'
-                    };
-                    extension = mimeToExt[contentType] || '.mp4'; // Default to .mp4 if MIME type not recognized
-                }
-
-                // Remove any existing extension and add the correct one
-                filename = filename.replace(/\.[^/.]+$/, '');
-
-                anchorEl.download = `${filename}${extension || '.mp4'}`;
-                document.body.appendChild(anchorEl);
-                anchorEl.click();
-                anchorEl.remove();
-                URL.revokeObjectURL(url);
-            } catch (error) {
-                console.error('Error downloading video:', error);
-            }
+        btn.addEventListener('click', (event) => {
+            downloadHandler(event, src);
         });
 
         anchor.addEventListener('mouseover', () => {
@@ -138,7 +148,7 @@ function addDownloadButtonToVideoContainers() {
             btn.style.display = 'none';
         });
     });
-}
+};
 
 // Run on load and on DOM changes (for dynamic content)
 addDownloadButtonToVideoContainers();
