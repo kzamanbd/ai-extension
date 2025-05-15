@@ -5,6 +5,11 @@ on:
         tags:
             - 'v*' # Push events to matching v*, i.e. v1.0, v20.15.10
 
+# Explicitly define permissions needed for creating releases
+permissions:
+    contents: write
+    packages: write
+
 jobs:
     build:
         name: Create Release
@@ -13,30 +18,26 @@ jobs:
             - name: Checkout code
               uses: actions/checkout@v3
 
-            - name: Build project
-              run: |
-                  # Add any build steps here if needed
-                  # For example, zip the extension files for release
-                  zip -r ai-clipcatcher.zip . -x "*.git*" -x "*.github*"
-
-            - name: Extract tag name
-              id: get_tag
-              run: echo "TAG_NAME=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+            - name: Set up Node.js
+              uses: actions/setup-node@v3
+              with:
+                  node-version: '16'
 
             - name: Extract version from tag
               id: get_version
-              run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_ENV
+              run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
 
             - name: Update version in manifest
               run: |
                   # Update version in manifest.json
-                  sed -i 's/"version": ".*"/"version": "'$VERSION'"/' manifest.json
+                  sed -i 's/"version": ".*"/"version": "${{ steps.get_version.outputs.VERSION }}"/' manifest.json
+                  cat manifest.json
 
             - name: Package Extension
               run: |
                   # Create a clean zip excluding development files
                   mkdir -p dist
-                  zip -r dist/ai-clipcatcher-$VERSION.zip \
+                  zip -r dist/ai-clipcatcher-${{ steps.get_version.outputs.VERSION }}.zip \
                     manifest.json \
                     background.js \
                     script.js \
@@ -44,16 +45,14 @@ jobs:
                     index.html \
                     icons/ \
                     -x "*.git*" -x "*.github*" -x "*.vscode*" -x "dist/*"
+                  ls -la dist/
 
             - name: Create Release
-              id: create_release
               uses: softprops/action-gh-release@v1
               with:
                   files: |
-                      dist/ai-clipcatcher-${{ env.VERSION }}.zip
-                  name: AI ClipCatcher v${{ env.VERSION }}
+                      dist/ai-clipcatcher-${{ steps.get_version.outputs.VERSION }}.zip
+                  name: AI ClipCatcher v${{ steps.get_version.outputs.VERSION }}
                   draft: false
                   prerelease: false
                   generate_release_notes: true
-              env:
-                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
