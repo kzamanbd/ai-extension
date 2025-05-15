@@ -43,7 +43,7 @@ function addDownloadButtonToVideoContainers() {
             width: 100%;
             height: 100%;
             z-index: 100;
-            background-color: red;
+            background-color: rgba(0, 0, 0, 0.5);
             transition: background-color 0.3s ease;
         `;
 
@@ -74,28 +74,31 @@ function addDownloadButtonToVideoContainers() {
             } else {
                 parent.removeChild(overlay);
             }
-        });
+        }); // add event listener
+        btn.addEventListener('click', async (event) => {
+            // Prevent default behavior and stop event propagation
+            event.preventDefault();
+            event.stopPropagation();
 
-        // add event listener
-        btn.addEventListener('click', async () => {
             // fetch the video file
             try {
                 const response = await fetch(src);
                 if (!response.ok) {
                     console.error('Network response was not ok');
                     return;
-                }                const blob = await response.blob();
+                }
+                const blob = await response.blob();
                 const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                
+                const anchorEl = document.createElement('a');
+                anchorEl.href = url;
+
                 // Get filename from URL as base
                 let filename = src.split('/').pop() || 'video';
-                
+
                 // Determine file extension from Content-Type header
                 const contentType = response.headers.get('Content-Type');
-                let extension = '';
-                
+                let extension = '.mp4'; // Default extension
+
                 if (contentType) {
                     // Map common video MIME types to extensions
                     const mimeToExt = {
@@ -108,17 +111,16 @@ function addDownloadButtonToVideoContainers() {
                         'video/3gpp': '.3gp',
                         'video/x-flv': '.flv'
                     };
-                    
                     extension = mimeToExt[contentType] || '.mp4'; // Default to .mp4 if MIME type not recognized
                 }
-                
+
                 // Remove any existing extension and add the correct one
-                filename = filename.replace(/\.[^/.]+$/, '') + (extension || '.mp4');
-                
-                a.download = filename;
-                document.body.appendChild(a);
-                a.click();
-                a.remove();
+                filename = filename.replace(/\.[^/.]+$/, '');
+
+                anchorEl.download = `${filename}${extension || '.mp4'}`;
+                document.body.appendChild(anchorEl);
+                anchorEl.click();
+                anchorEl.remove();
                 URL.revokeObjectURL(url);
             } catch (error) {
                 console.error('Error downloading video:', error);
