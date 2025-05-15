@@ -11,7 +11,6 @@ A Chrome extension that helps you find and download AI-generated content such as
 
 ## Supported Sites
 
-- Local development server ([http://127.0.0.1:5500](http://127.0.0.1:5500))
 - Sora ChatGPT ([https://sora.chatgpt.com](https://sora.chatgpt.com))
 
 ## Installation
@@ -46,7 +45,7 @@ ai-extension/
 
 ## Author
 
-Kamruzzaman
+[Kamruzzaman](https://kzaman.me)
 
 ## Version
 
