@@ -16,24 +16,44 @@ generate_changelog() {
     echo ""
 
     # Group by conventional commit types
-    echo "### ✨ New Features"
-    git log "$previous_tag".."$current" --pretty=format:"- %s" --grep="^feat"
-    echo -e "\n"
+    # Check for new features
+    local features=$(git log "$previous_tag".."$current" --pretty=format:"- %s" --grep="^feat")
+    if [ -n "$features" ]; then
+        echo "### ✨ New Features"
+        echo "$features"
+        echo -e "\n"
+    fi
 
-    echo "### 🐛 Bug Fixes"
-    git log "$previous_tag".."$current" --pretty=format:"- %s" --grep="^fix"
-    echo -e "\n"
+    # Check for bug fixes
+    local fixes=$(git log "$previous_tag".."$current" --pretty=format:"- %s" --grep="^fix")
+    if [ -n "$fixes" ]; then
+        echo "### 🐛 Bug Fixes"
+        echo "$fixes"
+        echo -e "\n"
+    fi
 
-    echo "### 📝 Documentation"
-    git log "$previous_tag".."$current" --pretty=format:"- %s" --grep="^docs"
-    echo -e "\n"
+    # Check for documentation changes
+    local docs=$(git log "$previous_tag".."$current" --pretty=format:"- %s" --grep="^docs")
+    if [ -n "$docs" ]; then
+        echo "### 📝 Documentation"
+        echo "$docs"
+        echo -e "\n"
+    fi
 
-    echo "### 🧹 Other Changes"
-    git log "$previous_tag".."$current" --pretty=format:"- %s" --grep="^refactor\|^chore\|^style\|^test\|^perf"
-    echo -e "\n"
+    # Check for other changes
+    local others=$(git log "$previous_tag".."$current" --pretty=format:"- %s" --grep="^refactor\|^chore\|^style\|^test\|^perf")
+    if [ -n "$others" ]; then
+        echo "### 🧹 Other Changes"
+        echo "$others"
+        echo -e "\n"
+    fi
 
-    echo "### 📦 Full Change Log"
-    git log "$previous_tag".."$current" --pretty=format:"- %h %s" | grep -v "^- [a-f0-9]* Merge "
+    # Full change log
+    local full_changes=$(git log "$previous_tag".."$current" --pretty=format:"- %h %s" | grep -v "^- [a-f0-9]* Merge ")
+    if [ -n "$full_changes" ]; then
+        echo "### 📦 Full Change Log"
+        echo "$full_changes"
+    fi
 }
 
 # Function to compare semantic versions

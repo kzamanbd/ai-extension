@@ -100,6 +100,7 @@ jobs:
                       echo "" >> $GITHUB_OUTPUT
                     fi
                     
+                    # Full Change Log (always show this section)
                     echo "### 📦 Full Change Log" >> $GITHUB_OUTPUT
                     git log "$PREV_TAG"..HEAD --pretty=format:"- %h %s" | grep -v "^- [a-f0-9]* Merge " >> $GITHUB_OUTPUT
                     echo "EOF" >> $GITHUB_OUTPUT
