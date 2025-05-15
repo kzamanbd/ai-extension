@@ -73,7 +73,6 @@ const downloadHandler = async (event, src) => {
         // Fetch the video file
         const response = await fetch(src);
         if (!response.ok) {
-            console.error('Network response was not ok');
             return;
         }
         const blob = await response.blob();
@@ -100,12 +99,12 @@ const downloadHandler = async (event, src) => {
                     // Clean up the object URL after download starts
                     URL.revokeObjectURL(url);
                     if (!response || !response.success) {
-                        console.error('Download failed:', response ? response.error : 'Unknown error');
+                        console.warn('Download failed:', response ? response.error : 'Unknown error');
                     }
                 }
             );
         } catch (error) {
-            console.error('Error sending message to background script:', error);
+            console.warn('Error sending message to background script:', error);
             // Fallback to the old method if we're in a context where chrome.runtime isn't available
             // This should not normally be needed, but acts as a safety net
             const anchorEl = document.createElement('a');
@@ -117,7 +116,7 @@ const downloadHandler = async (event, src) => {
             URL.revokeObjectURL(url);
         }
     } catch (error) {
-        console.error('Error downloading video:', error);
+        console.warn('Error downloading video:', error);
     } finally {
         // remove the spinner
         const button = event.target;
