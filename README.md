@@ -74,12 +74,25 @@ This project uses GitHub Actions to automate the release process. When you're re
 1. Update your code and test it thoroughly
 2. Use the provided release script which will automatically:
    - Update the version in `manifest.json`
+   - Generate a comprehensive changelog
    - Commit the changes
    - Create and push a new tag
 
 ```bash
 # Example: Release version 1.0.1
 ./release.sh 1.0.1
+```
+
+### Advanced Release Options
+
+The release script supports additional options for more control:
+
+```bash
+# Generate and save changelog to a file without creating a release
+./release.sh --generate-changelog --output CHANGELOG.md
+
+# Create a release and save the changelog to a file
+./release.sh 1.0.1 --output CHANGELOG.md
 ```
 
 Or do it manually:
@@ -93,7 +106,8 @@ git push origin v1.0.1
 
 This will automatically trigger the GitHub workflow that:
 
-- Creates a new GitHub release
+- Creates a new GitHub release with detailed changelog
+- Groups changes by type (features, bug fixes, documentation, etc.)
 - Packages the extension into a ZIP file
 - Attaches the ZIP file to the release
 

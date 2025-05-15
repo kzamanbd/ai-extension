@@ -1,6 +1,41 @@
 #!/bin/bash
 # release.sh - Helper script to release a new version of the extension
 
+# Function to generate a changelog between two tags or commits
+generate_changelog() {
+    local previous_tag=$1
+    local current=$2
+    local changelog=""
+
+    if [ -z "$previous_tag" ]; then
+        echo "## 🚀 First Release $current"
+        return
+    fi
+
+    echo "## 🚀 Changes since $previous_tag"
+    echo ""
+
+    # Group by conventional commit types
+    echo "### ✨ New Features"
+    git log "$previous_tag".."$current" --pretty=format:"- %s" --grep="^feat"
+    echo -e "\n"
+
+    echo "### 🐛 Bug Fixes"
+    git log "$previous_tag".."$current" --pretty=format:"- %s" --grep="^fix"
+    echo -e "\n"
+
+    echo "### 📝 Documentation"
+    git log "$previous_tag".."$current" --pretty=format:"- %s" --grep="^docs"
+    echo -e "\n"
+
+    echo "### 🧹 Other Changes"
+    git log "$previous_tag".."$current" --pretty=format:"- %s" --grep="^refactor\|^chore\|^style\|^test\|^perf"
+    echo -e "\n"
+
+    echo "### 📦 Full Change Log"
+    git log "$previous_tag".."$current" --pretty=format:"- %h %s" | grep -v "^- [a-f0-9]* Merge "
+}
+
 # Function to compare semantic versions
 # Returns 1 if version1 > version2, 0 if equal, -1 if version1 < version2
 compare_versions() {
@@ -43,14 +78,39 @@ compare_versions() {
     fi
 }
 
-# Check if a version argument was provided
-if [ -z "$1" ]; then
-    echo "Usage: ./release.sh <version>"
-    echo "Example: ./release.sh 1.0.0"
+# Parse command line options
+generate_only=false
+changelog_file=""
+
+while [[ $# -gt 0 ]]; do
+    key="$1"
+    case $key in
+    --generate-changelog)
+        generate_only=true
+        shift
+        ;;
+    --output)
+        changelog_file="$2"
+        shift
+        shift
+        ;;
+    *)
+        VERSION="$1"
+        shift
+        ;;
+    esac
+done
+
+# Check if version is provided when not just generating changelog
+if [ "$generate_only" = false ] && [ -z "$VERSION" ]; then
+    echo "Usage: ./release.sh <version> [--generate-changelog] [--output filename]"
+    echo "Examples:"
+    echo "  ./release.sh 1.0.0                            # Create a release with version 1.0.0"
+    echo "  ./release.sh --generate-changelog             # Only generate changelog without creating a release"
+    echo "  ./release.sh 1.0.0 --output CHANGELOG.md      # Create release and save changelog to CHANGELOG.md"
     exit 1
 fi
 
-VERSION=$1
 TAG_NAME="v$VERSION"
 
 # Get the current version from manifest.json
@@ -77,8 +137,44 @@ fi
 
 echo "Updated manifest.json version to $VERSION"
 
+# If only generating changelog
+if [ "$generate_only" = true ]; then
+    # Get the latest tag for the current version
+    LATEST_TAG=$(git tag --sort=-v:refname | grep "^v" | head -n 1)
+    PREV_TAG=$(git tag --sort=-v:refname | grep "^v" | head -n 2 | tail -n 1)
+
+    if [ -z "$LATEST_TAG" ]; then
+        LATEST_TAG="HEAD"
+    fi
+
+    CHANGELOG=$(generate_changelog "$PREV_TAG" "$LATEST_TAG")
+
+    if [ -n "$changelog_file" ]; then
+        echo "$CHANGELOG" >"$changelog_file"
+        echo "✅ Changelog generated and saved to $changelog_file"
+    else
+        echo "$CHANGELOG"
+    fi
+
+    exit 0
+fi
+
+# Regular release process
+# Generate changelog first
+PREV_TAG=$(git tag --sort=-v:refname | grep "^v" | head -n 1)
+CHANGELOG=$(generate_changelog "$PREV_TAG" "HEAD")
+
+# Save changelog to file if specified
+if [ -n "$changelog_file" ]; then
+    echo "$CHANGELOG" >"$changelog_file"
+    echo "✅ Changelog saved to $changelog_file"
+fi
+
 # Commit the version change
 git add manifest.json
+if [ -n "$changelog_file" ]; then
+    git add "$changelog_file"
+fi
 git commit -m "Release version to $VERSION"
 
 # Create and push the tag
@@ -90,3 +186,8 @@ echo "✅ Released version $VERSION!"
 echo "  - Created and pushed tag: $TAG_NAME"
 echo "  - The GitHub workflow will now create the release automatically"
 echo "  - Check the workflow status at: https://github.com/kzamanbd/ai-extension/actions"
+
+# Display preview of the changelog
+echo ""
+echo "📝 Changelog Preview:"
+echo "$CHANGELOG"

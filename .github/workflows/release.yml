@@ -47,12 +47,55 @@ jobs:
                     -x "*.git*" -x "*.github*" -x "*.vscode*" -x "dist/*"
                   ls -la dist/
 
+            - name: Generate Full Changelog
+              id: generate_changelog
+              run: |
+                  # Get the previous tag for comparison
+                  git fetch --tags
+                  PREV_TAG=$(git tag --sort=-v:refname | grep "^v" | head -n 2 | tail -n 1)
+
+                  if [ -z "$PREV_TAG" ]; then
+                    # If there's no previous tag, get the first commit
+                    echo "CHANGELOG=## 🚀 First Release v${{ steps.get_version.outputs.VERSION }}" >> $GITHUB_OUTPUT
+                  else
+                    # Generate changelog since the previous tag
+                    echo "CHANGELOG<<EOF" >> $GITHUB_OUTPUT
+                    echo "## 🚀 Changes since $PREV_TAG" >> $GITHUB_OUTPUT
+                    echo "" >> $GITHUB_OUTPUT
+                    
+                    # Group by type using conventional commits pattern
+                    echo "### ✨ New Features" >> $GITHUB_OUTPUT
+                    git log "$PREV_TAG"..HEAD --pretty=format:"- %s" --grep="^feat" >> $GITHUB_OUTPUT
+                    echo "" >> $GITHUB_OUTPUT
+                    echo "" >> $GITHUB_OUTPUT
+                    
+                    echo "### 🐛 Bug Fixes" >> $GITHUB_OUTPUT
+                    git log "$PREV_TAG"..HEAD --pretty=format:"- %s" --grep="^fix" >> $GITHUB_OUTPUT
+                    echo "" >> $GITHUB_OUTPUT
+                    echo "" >> $GITHUB_OUTPUT
+                    
+                    echo "### 📝 Documentation" >> $GITHUB_OUTPUT
+                    git log "$PREV_TAG"..HEAD --pretty=format:"- %s" --grep="^docs" >> $GITHUB_OUTPUT
+                    echo "" >> $GITHUB_OUTPUT
+                    echo "" >> $GITHUB_OUTPUT
+                    
+                    echo "### 🧹 Other Changes" >> $GITHUB_OUTPUT
+                    git log "$PREV_TAG"..HEAD --pretty=format:"- %s" --grep="^refactor\|^chore\|^style\|^test\|^perf" >> $GITHUB_OUTPUT
+                    echo "" >> $GITHUB_OUTPUT
+                    echo "" >> $GITHUB_OUTPUT
+                    
+                    echo "### 📦 Full Change Log" >> $GITHUB_OUTPUT
+                    git log "$PREV_TAG"..HEAD --pretty=format:"- %h %s" | grep -v "^- [a-f0-9]* Merge " >> $GITHUB_OUTPUT
+                    echo "EOF" >> $GITHUB_OUTPUT
+                  fi
+
             - name: Create Release
               uses: softprops/action-gh-release@v1
               with:
                   files: |
                       dist/ai-clipcatcher-${{ steps.get_version.outputs.VERSION }}.zip
                   name: AI ClipCatcher v${{ steps.get_version.outputs.VERSION }}
+                  body: ${{ steps.generate_changelog.outputs.CHANGELOG }}
                   draft: false
                   prerelease: false
-                  generate_release_notes: true
+                  generate_release_notes: false
