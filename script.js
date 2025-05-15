@@ -29,6 +29,8 @@ function addDownloadButtonToVideoContainers() {
             border-radius: 4px;
             text-decoration: none;
             font-size: 14px;
+            display: none;
+            cursor: pointer;
         `;
 
         // Insert after the video
@@ -55,9 +57,7 @@ function addDownloadButtonToVideoContainers() {
             if (anchor) {
                 anchor.parentElement.style.position = 'relative';
                 anchor.parentElement.appendChild(overlay);
-                if (anchorHref) {
-                    anchor.href = 'javascript:void(0)';
-                }
+                anchor.href = 'javascript:void(0)';
             } else {
                 parent.appendChild(overlay);
             }
@@ -74,7 +74,9 @@ function addDownloadButtonToVideoContainers() {
             } else {
                 parent.removeChild(overlay);
             }
-        }); // add event listener
+        });
+
+        // add event listener to the button
         btn.addEventListener('click', async (event) => {
             // Prevent default behavior and stop event propagation
             event.preventDefault();
@@ -125,6 +127,15 @@ function addDownloadButtonToVideoContainers() {
             } catch (error) {
                 console.error('Error downloading video:', error);
             }
+        });
+
+        anchor.addEventListener('mouseover', () => {
+            // Show the button on hover
+            btn.style.display = 'block';
+        });
+        anchor.addEventListener('mouseout', () => {
+            // Hide the button when not hovered
+            btn.style.display = 'none';
         });
     });
 }
