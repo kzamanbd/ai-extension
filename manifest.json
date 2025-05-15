@@ -1,7 +1,7 @@
 {
     "name": "AI ClipCatcher",
     "description": "AI ClipCatcher is a Chrome extension that helps you find AI tools and resources.",
-    "version": "1.0.5",
+    "version": "1.0.6",
     "author": "Kamruzzaman",
     "manifest_version": 3,
     "permissions": ["tabs", "activeTab", "storage", "contextMenus", "downloads"],
