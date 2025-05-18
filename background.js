@@ -15,7 +15,6 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
             },
             (downloadId) => {
                 if (chrome.runtime.lastError) {
-                    console.warn('Download failed:', chrome.runtime.lastError);
                     sendResponse({ success: false, error: chrome.runtime.lastError.message });
                 } else {
                     sendResponse({ success: true, downloadId });

@@ -16,7 +16,27 @@ const initSettings = () => {
 // Initialize settings when script loads
 initSettings();
 
-function generateRandomString(length = 32) {
+function generateRandomString(name, length = 32) {
+    // name example: https://s3.ap-south-1.amazonaws.com/invideo-block-assets/Template_Block_Assets/Template_sample_clips/one_click_preview/production/Epic_Showdown_Mythical_Dragons_vs_Future_production_story_30520_16_9_1731586755887_SD202.mp4;
+    // remove the domain name and get the last part of the url
+    const lastPart = name.split('/').pop();
+    // remove the extension from the last part
+    const nameWithoutExtension = lastPart.split('.').slice(0, -1).join('.');
+    // remove all _ from the name with spaces
+    const nameWithoutSpaces = nameWithoutExtension.replace(/_/g, ' ');
+    // remove all - from the name with spaces
+    const nameWithoutDashes = nameWithoutSpaces.replace(/-/g, ' ');
+    // remove all special characters from the name
+    const nameWithoutSpecialChars = nameWithoutDashes.replace(/[^a-zA-Z0-9 ]/g, '');
+    // remove all extra spaces from the name
+    const nameWithoutExtraSpaces = nameWithoutSpecialChars.replace(/\s+/g, ' ').trim();
+    // capitalize the first letter of each word
+    const capitalizedName = nameWithoutExtraSpaces.replace(/\b\w/g, (char) => char.toUpperCase());
+
+    if (capitalizedName.length) {
+        return capitalizedName;
+    }
+
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
     let result = '';
     for (let i = 0; i < length; i++) {
@@ -82,8 +102,8 @@ const downloadHandler = async (event, src) => {
         const extension = getExtensionFromContentType(contentType);
 
         // Generate a random filename
-        const filename = generateRandomString();
-        const fullFilename = `ai-clip-catcher_${filename}${extension}`;
+        const filename = generateRandomString(src);
+        const fullFilename = `${filename}${extension}`;
         // Create object URL
         const url = URL.createObjectURL(blob);
         // Send message to background script to handle the download
@@ -99,12 +119,11 @@ const downloadHandler = async (event, src) => {
                     // Clean up the object URL after download starts
                     URL.revokeObjectURL(url);
                     if (!response || !response.success) {
-                        console.warn('Download failed:', response ? response.error : 'Unknown error');
+                        console.log('Download failed:', response ? response.error : 'Unknown error');
                     }
                 }
             );
         } catch (error) {
-            console.warn('Error sending message to background script:', error);
             // Fallback to the old method if we're in a context where chrome.runtime isn't available
             // This should not normally be needed, but acts as a safety net
             const anchorEl = document.createElement('a');
@@ -116,7 +135,7 @@ const downloadHandler = async (event, src) => {
             URL.revokeObjectURL(url);
         }
     } catch (error) {
-        console.warn('Error downloading video:', error);
+        console.log('Error downloading video:', error);
     } finally {
         // remove the spinner
         const button = event.target;
@@ -133,7 +152,6 @@ const downloadHandler = async (event, src) => {
 };
 
 const addDownloadButtonToVideoContainers = () => {
-    console.log('Adding download button to video containers');
     // Find all video containers (adjust selector as needed)
     document.querySelectorAll('div > video[src]').forEach((video) => {
         // Prevent adding multiple buttons
@@ -163,7 +181,6 @@ const addDownloadButtonToVideoContainers = () => {
             border-radius: 4px;
             text-decoration: none;
             font-size: 14px;
-            display: none;
             cursor: pointer;
         `;
 
@@ -213,17 +230,6 @@ const addDownloadButtonToVideoContainers = () => {
         // add event listener to the button
         btn.addEventListener('click', (event) => {
             downloadHandler(event, src);
-        });
-
-        anchor.addEventListener('mouseover', () => {
-            // Show the button on hover
-            btn.style.display = 'block';
-        });
-        anchor.addEventListener('mouseout', () => {
-            // Hide the button when not hovered or not loading
-            if (btn.getAttribute('disabled') !== 'true') {
-                btn.style.display = 'none';
-            }
         });
     });
 };

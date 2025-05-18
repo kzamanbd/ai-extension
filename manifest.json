@@ -25,7 +25,7 @@
     },
     "content_scripts": [
         {
-            "matches": ["http://127.0.0.1:5500/*", "https://sora.chatgpt.com/*"],
+            "matches": ["http://127.0.0.1:5500/*", "https://sora.chatgpt.com/*", "https://invideo.io/ai-videos/*"],
             "js": ["script.js"]
         }
     ]
